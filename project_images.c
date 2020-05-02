@@ -55,6 +55,7 @@ const uint8_t AsteroidBitmaps[] =
 	0x00, 0x0F, 0xE0, 0x00, //            #######             
 };
 
+
 /* Bitmap sizes for space_ship */
 const uint8_t AsteroidWidthPixels = 32;
 const uint8_t AsteroidHeightPixels = 22;
@@ -86,6 +87,7 @@ const uint8_t PlayerBitmaps[] =
 0x00, 0x0F, 0x03, 0xC0, 0x00, //            ####      ####              
 0x00, 0x00, 0xFC, 0x00, 0x00, //                ######                  
 };
+
 
 // Bitmap sizes for player
 const uint8_t PlayerWidthPixels = 40;
