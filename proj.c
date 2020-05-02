@@ -1,11 +1,11 @@
 #include "proj.h"
 
-volatile uint16_t SHIP_X_COORD = 190;
-volatile uint16_t SHIP_Y_COORD = 270;
-volatile uint16_t INVADER_X_COORD = 50;
-volatile uint16_t INVADER_Y_COORD = 40;
-volatile bool ALERT_SPACE_SHIP = true;
-volatile bool ALERT_INVADER = true;
+volatile uint16_t ASTEROID_X_COORD = 190;
+volatile uint16_t ASTEROID_Y_COORD = 270;
+volatile uint16_t PLAYER_X_COORD = 50;
+volatile uint16_t PLAYER_Y_COORD = 40;
+volatile bool ALERT_ASTEROID = true;
+volatile bool ALERT_PLAYER = true;
 char STUDENT_NAME[] = "Ryan Andrasco/Jonathan Schneider";
 
 typedef struct
@@ -114,14 +114,14 @@ void move_image(
 // screen.
 //*****************************************************************************
 bool check_game_over(
-        volatile uint16_t ship_x_coord, 
-        volatile uint16_t ship_y_coord, 
-        uint8_t ship_height, 
-        uint8_t ship_width,
-        volatile uint16_t invader_x_coord, 
-        volatile uint16_t invader_y_coord, 
-        uint8_t invader_height, 
-        uint8_t invader_width
+        volatile uint16_t asteroid_x_coord, 
+        volatile uint16_t asteroid_y_coord, 
+        uint8_t asteroid_height, 
+        uint8_t asteroid_width,
+        volatile uint16_t player_x_coord, 
+        volatile uint16_t player_y_coord, 
+        uint8_t player_height, 
+        uint8_t player_width
 )
 {
 	//This is handled by checking to see if it is possible that the two objects are not overlapping
@@ -129,19 +129,19 @@ bool check_game_over(
 	//so the method returns true
 	
 	//ships right edge is left of invaders left edge
-	if((ship_x_coord + (ship_width/2) - 1) < (invader_x_coord - (invader_width/2))){
+	if((asteroid_x_coord + (asteroid_width/2) - 1) < (player_x_coord - (player_width/2))){
 		return false;
 	}
 	//ships left edge is right of invaders right edge
-	else if((ship_x_coord - (ship_width/2)) > (invader_x_coord + (invader_width/2 - 1))){
+	else if((asteroid_x_coord - (asteroid_width/2)) > (player_x_coord + (player_width/2 - 1))){
 		return false;
 	}//if we've gotten here we know that collision in the x direction is occuring so only y to check
 	//ships top edge is below invaders bottom edge
-	else if((ship_y_coord - (ship_height/2)) > (invader_y_coord + (invader_height/2) - 1)){
+	else if((asteroid_y_coord - (asteroid_height/2)) > (player_y_coord + (player_height/2) - 1)){
 		return false;
 	}
 	//ships bottom edge is above invaders top edge
-	else if((ship_y_coord + (ship_height/2) - 1) < (invader_y_coord - (invader_height/2))){
+	else if((asteroid_y_coord + (asteroid_height/2) - 1) < (player_y_coord - (player_height/2))){
 		return false;
 	}//if none of these cases are true then collison in both x and y axes is occuring and therefore the
 	//rectangles are in contact so game over
@@ -167,7 +167,7 @@ void init_hardware(void)
 //*****************************************************************************
 // Main application for HW3
 //*****************************************************************************
-void hw3_main(void)
+void proj_main(void)
 {
     bool game_over = false;
     init_hardware();
@@ -175,55 +175,55 @@ void hw3_main(void)
 
       while(!game_over)
       {
-          if(ALERT_SPACE_SHIP)
+          if(ALERT_ASTEROID)
           {
-            ALERT_SPACE_SHIP = false;
+            ALERT_ASTEROID = false;
             
             lcd_draw_image(
-                          SHIP_X_COORD,                       // X Center Point
-                          space_shipWidthPixels,   // Image Horizontal Width
-                          SHIP_Y_COORD,                       // Y Center Point
-                          space_shipHeightPixels,  // Image Vertical Height
-                          space_shipBitmaps,       // Image
-                          LCD_COLOR_BLUE,           // Foreground Color
+                          ASTEROID_X_COORD,                       // X Center Point
+                          AsteroidWidthPixels,   // Image Horizontal Width
+                          ASTEROID_Y_COORD,                       // Y Center Point
+                          AsteroidHeightPixels,  // Image Vertical Height
+                          AsteroidBitmaps,       // Image
+                          LCD_COLOR_WHITE,           // Foreground Color
                           LCD_COLOR_BLACK          // Background Color
                         );
               
             game_over = check_game_over(
-                                        SHIP_X_COORD,
-                                        SHIP_Y_COORD,
-                                        space_shipHeightPixels,
-                                        space_shipWidthPixels,
-                                        INVADER_X_COORD,
-                                        INVADER_Y_COORD,
-                                        invaderHeightPixels,
-                                        invaderWidthPixels
+                                        ASTEROID_X_COORD,
+                                        ASTEROID_Y_COORD,
+                                        AsteroidHeightPixels,
+                                        AsteroidWidthPixels,
+                                        PLAYER_X_COORD,
+                                        PLAYER_Y_COORD,
+                                        PlayerHeightPixels,
+                                        PlayerWidthPixels
                                     );
           }
           
-          if(ALERT_INVADER)
+          if(ALERT_PLAYER)
           {
-            ALERT_INVADER = false;
+            ALERT_PLAYER = false;
             
             lcd_draw_image(
-                          INVADER_X_COORD,          // X Center Point
-                          invaderWidthPixels,       // Image Horizontal Width
-                          INVADER_Y_COORD,          // Y Center Point
-                          invaderHeightPixels,      // Image Vertical Height
-                          invaderBitmaps,           // Image
-                          LCD_COLOR_RED,            // Foreground Color
+                          PLAYER_X_COORD,          // X Center Point
+                          PlayerWidthPixels,       // Image Horizontal Width
+                          PLAYER_Y_COORD,          // Y Center Point
+                          PlayerHeightPixels,      // Image Vertical Height
+                          PlayerBitmaps,           // Image
+                          pColor,            // Foreground Color
                           LCD_COLOR_BLACK           // Background Color
                         );
               
              game_over = check_game_over(
-                                            SHIP_X_COORD,
-                                            SHIP_Y_COORD,
-                                            space_shipHeightPixels,
-                                            space_shipWidthPixels,
-                                            INVADER_X_COORD,
-                                            INVADER_Y_COORD,
-                                            invaderHeightPixels,
-                                            invaderWidthPixels
+                                            ASTEROID_X_COORD,
+                                            ASTEROID_Y_COORD,
+                                            AsteroidHeightPixels,
+                                            AsteroidWidthPixels,
+                                            PLAYER_X_COORD,
+                                            PLAYER_Y_COORD,
+                                            PlayerHeightPixels,
+                                            PlayerWidthPixels
                                         );
           }
           

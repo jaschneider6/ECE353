@@ -22,6 +22,8 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
+extern volatile  unit16_t pColor;
+#include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>

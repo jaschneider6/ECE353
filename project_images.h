@@ -32,7 +32,7 @@ extern const uint8_t PlayerHeightPixels;
 // Bitmap info for asteroid chars
 extern const uint8_t AsteroidBitmaps[];
 extern const uint8_t AsteroidWidthPixels;
-extern const uint8_t AsteroidPixels;
+extern const uint8_t AsteroidHeightPixels;
 
 
 #endif

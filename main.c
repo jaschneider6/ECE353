@@ -21,7 +21,7 @@
 // EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "main.h"
-
+extern volatile uint16_t pColor;
 
 //*****************************************************************************
 //*****************************************************************************
@@ -60,12 +60,22 @@ int
 main(void)
 {
 	uint16_t x,y;
-  uint8_t touch_event;
+  uint8_t touch_event = 0;
   i2c_status_t td_status;
   i2c_status_t x_status;
-  i2c_status_t y_status;
 	
 	initializeBoard();
 	
+	while(touch_event == 0){
+	touch_event = ft6x06_read_td_status();
+	};
+	x_status = ft6x06_read_x();
+	if(x>119){
+		pColor = LCD_COLOR_BLUE;
+	}
+	else{
+		pColor = LCD_COLOR_GREEN;
+	}
+	proj_main();
     while(1){};
 }
