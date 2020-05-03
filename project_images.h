@@ -33,6 +33,7 @@ extern const uint8_t PlayerHeightPixels;
 extern const uint8_t AsteroidBitmaps[];
 extern const uint8_t AsteroidWidthPixels;
 extern const uint8_t AsteroidHeightPixels;
+extern const uint8_t BulletBitmaps[]
 
 
 #endif

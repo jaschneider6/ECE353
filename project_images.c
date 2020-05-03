@@ -94,5 +94,9 @@ const uint8_t PlayerWidthPixels = 40;
 const uint8_t PlayerHeightPixels = 20;
 
 
+const uint8_t BulletBitmaps[] =
+{0};
+
+
 
 
