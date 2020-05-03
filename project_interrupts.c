@@ -65,7 +65,15 @@ void TIMER1A_Handler(void)
 	
     // Clear the interrupt
 	TIMER1->ICR |= TIMER_ICR_TATOCINT;
-	
+	SYSCTL->RCGCGPIO |= SYSCTL_RCGCGPIO_R5;
+	uint16_t bit_mask;
+	bit_mask = 0x0000000E;
+	while( !(SYSCTL->PRGPIO & SYSCTL_PRGPIO_R5) ) {}
+	GPIO_PORTF_LOCK_R = 0x4C4F434B ;
+	GPIO_PORTF_CR_R = 0xFF;
+		
+	GPIOF->DEN |= bit_mask; //digital enable
+	GPIOF->DIR |= bit_mask; //output
 }
 //*****************************************************************************
 // TIMER2 ISR is used to determine when to move the Invader
@@ -73,16 +81,39 @@ void TIMER1A_Handler(void)
 void TIMER2A_Handler(void)
 {	
 	//if the invader is not going to contact the edge then we set the draw boolean to high, then call move image
-	if(!contact_edge(ps2_get_direction(), INVADER_X_COORD, INVADER_Y_COORD, invaderHeightPixels, invaderWidthPixels)){
-		ALERT_INVADER = true;
-		move_image(ps2_get_direction(), &INVADER_X_COORD, &INVADER_Y_COORD, invaderHeightPixels, invaderWidthPixels);
+	if(!contact_edge(ps2_get_direction(), PLAYER_X_COORD, PLAYER_Y_COORD, PlayerHeightPixels, PlayerWidthPixels)){
+		ALERT_PLAYER = true;
+		move_image(ps2_get_direction(), &PLAYER_X_COORD, &PLAYER_Y_COORD, PlayerHeightPixels, PlayerHeightPixels);
 	}
     // Clear the interrupt
 	TIMER2->ICR |= TIMER_ICR_TATOCINT;
 	
 }
 
-
+//*****************************************************************************
+// TIMER3 ISR is used to determine when to move the spaceship
+//*****************************************************************************
+void TIMER3A_Handler(void)
+{	
+	// spaceship is always moving so set boolean high for next write
+	ALERT_ASTEROID = true;
+	//if we are out of moves in this direction or contacting the edge we need to handle getting a new direction and length to move
+	if(contact_edge(direction, ASTEROID_X_COORD, ASTEROID_Y_COORD, AsteroidHeightPixels, AsteroidWidthPixels) || count == 0){
+		
+		direction = get_new_direction(direction); // grabs new direction
+		//forces this dirction to be a direction that is not pushing into a wall
+		while(contact_edge(direction, ASTEROID_X_COORD, ASTEROID_Y_COORD, AsteroidHeightPixels, AsteroidWidthPixels)){
+			direction = get_new_direction(direction);
+		}
+		//gets how far to move
+		count = get_new_move_count();		
+	}
+	//count decrements as we have moved once and we move the image of the spaceship
+	count--;
+	move_image(direction, &ASTEROID_X_COORD, &ASTEROID_Y_COORD, AsteroidHeightPixels, AsteroidWidthPixels);
+	// Clear the interrupt
+	TIMER3->ICR |= TIMER_ICR_TATOCINT;  
+}
 //*****************************************************************************
 // TIMER4 ISR is used to trigger the ADC
 //*****************************************************************************
@@ -109,3 +140,20 @@ void ADC0SS2_Handler(void)
 	
 	
 }
+
+void GPIOF_Handler(void){
+	uint8_t buttonVal = 0;
+	io_expander_read_reg(MCP23017_GPIOB_R);
+	
+	switch(buttonVal){
+		case (0x7):
+			break;
+		case (0xB):
+			break;
+		case (0xD):
+			break;
+		case (0xE):
+			break;
+	
+}
+	}
