@@ -1,5 +1,5 @@
 #include "proj.h"
-
+//coordinates and values for asteroid, player, directions, and button status
 volatile uint16_t ASTEROID_X_COORD = 190;
 volatile uint16_t ASTEROID_Y_COORD = 270;
 volatile uint16_t PLAYER_X_COORD = 50;
@@ -172,8 +172,9 @@ void init_hardware(void)
   gp_timer_config_32(TIMER3_BASE,TIMER_TAMR_TAMR_PERIOD, 500000, false, true);
   gp_timer_config_32(TIMER4_BASE,TIMER_TAMR_TAMR_PERIOD, 50000, false, true);
 }
-//X, Y, ready, and Direction values for the 3 bullets allowed on screen
-
+//X, Y, ready, and Direction values for the 2 bullets allowed on screen. These bullets are ship spawn that kamikaze into the
+//asteroids, but will be referred to as bullets as their center of mass must strike the asteroid otherwise you don't send it off
+//course enough to save yourself
 volatile uint16_t B1_X = 0;
 volatile uint16_t B1_Y = 0;
 volatile PS2_DIR_t B1_Dir = PS2_DIR_CENTER;
@@ -182,15 +183,11 @@ volatile uint16_t B2_X = 0;
 volatile uint16_t B2_Y = 0;
 volatile PS2_DIR_t B2_Dir = PS2_DIR_CENTER;
 volatile bool B2_rdy = true;
-volatile uint16_t B3_X = 0;
-volatile uint16_t B3_Y = 0;
-volatile PS2_DIR_t B3_Dir = PS2_DIR_CENTER;
-volatile bool B3_rdy = true;
 
 volatile uint8_t kills = 0x0; //Kill counter
 
-//This method checks if any of the three bullets have destroyed the asteroid. If they have, it will delete the asteroid, create a new
-//asteroid, and increment the counter. If no contact is found then it will check for the next bullet, until all 3 have been checked
+//This method checks if any of the bullets have destroyed the asteroid. If they have, it will delete the asteroid, create a new
+//asteroid, and increment the counter. If no contact is found then it will check for the next bullet, until both have been checked
 
 void ast_shoot(){
 // checks bullet 1's contact with asteroid, if hits, it deletes, creates, and increments
@@ -219,42 +216,28 @@ void ast_shoot(){
 			return;
 		}	
 	}
-		
-	
-// checks bullet 3's contact with asteroid, if hits, it deletes, creates, and increments
-	if ((B3_X >= (ASTEROID_X_COORD - AsteroidWidthPixels/2)) && (B3_X <= (ASTEROID_X_COORD + AsteroidWidthPixels/2))){
-		if((B3_Y >= (ASTEROID_Y_COORD - AsteroidHeightPixels/2)) && (B3_Y <= (ASTEROID_Y_COORD + AsteroidHeightPixels/2))){
-			lcd_draw_image(ASTEROID_X_COORD, AsteroidWidthPixels, ASTEROID_Y_COORD, AsteroidHeightPixels, AsteroidBitmaps, LCD_COLOR_BLACK, LCD_COLOR_BLACK);
-			kills++;
-			led_kill_count(kills);
-			ASTEROID_X_COORD = 190;
-			ASTEROID_Y_COORD = 270;
-			lcd_draw_image(ASTEROID_X_COORD, AsteroidWidthPixels, ASTEROID_Y_COORD, AsteroidHeightPixels, AsteroidBitmaps, LCD_COLOR_WHITE, LCD_COLOR_BLACK);//creates new asteroid
-			return;
-		}	
-	}
 	return;
 }
 	
 
-//***********
+//***************
 //bullet updater
-//***********
+//***************
 
 
-//This function iterates through all 3 bullets and updates their images by overwriting the old location, then if they can move further,
+//This function iterates through both bullets and updates their images by overwriting the old location, then if they can move further,
 //updating their coordinate and redrawing them, If it hits a wall, then it erases the bullet and sets their ready flag to true allowing
 //the player to shoot
 
 void BulletUpdater(){
-//All bullets are handled the same, It is a switch statment on their direction, it then checks the relevant boundary, and if
-//no contact will occur, then it updates position and redraws. If it will contact edge the bullet is removed and then the ready
+//All bullets are handled the same, It is a switch statment on the direction, it then checks the relevant boundary, and if
+//no contact will occur, then it updates position and redraws. If it will contact the bottom edge the bullet is removed and then the ready
 //flag is switched to high so it can be reshot
 	switch(B1_Dir){
 	//All cases are handled the same, the if is seeing if the bullet will not be off of the relevant edge for the direction
 	//If this is satisfied, then it clears the last image, increments or decrements value and redraws the bullet in it's new location
 	//If it is not satisfied then it clears the last image, and sets the ready flag to true because the bullet can now be 
-	//shot again
+	//shot again if it hasn't been shot then default do nothing
 		case PS2_DIR_DOWN:
 		if(B1_Y + PlayerHeightPixels/2 < 320){
 			if(!B1_rdy){
@@ -294,36 +277,13 @@ void BulletUpdater(){
 		
 		default:
 			break;
-	}
-	
-	//Bullet 3 handling start
-		switch(B3_Dir){
-		case PS2_DIR_DOWN:
-		if(B3_Y + PlayerHeightPixels/2< 320){
-			if(!B3_rdy){
-			lcd_draw_image(B3_X, PlayerWidthPixels + 2, B3_Y, PlayerHeightPixels + 2, BulletBitmaps, LCD_COLOR_BLACK, LCD_COLOR_BLACK);
-			B3_Y++;
-			lcd_draw_image(B1_X, PlayerWidthPixels, B3_Y, PlayerHeightPixels, PlayerBitmaps, pColor, LCD_COLOR_BLACK);
-		}
-	}			else{
-			lcd_draw_image(B3_X, PlayerWidthPixels, B3_Y, PlayerHeightPixels, PlayerBitmaps, LCD_COLOR_BLACK, LCD_COLOR_BLACK);
-			B3_X = 0;
-			B3_Y = 0;
-			B3_rdy = true;
-		}
-		break;
-		
-		default:
-			break;
-	}
-	
-	
+	}	
 }
 
 
-////****
+////***********
 ////Shootbullet
-////****
+////***********
 
 //This function is how a bullet is shot. It finds the first bullet that is available to shoot and sends it in the correct direction
 //if no bullet is available then the function does not shoot a bullet
@@ -364,7 +324,7 @@ void Shootbullet(DIR_BTN_t dir) {
 	
 	
 }
-	
+	//setting debounce of buttons- grabbed from ICE
 	void debounce_wait(void) 
 {
   int i = 10000;
@@ -451,10 +411,11 @@ bool sw1_debounce_fsm(void)
 //*****************************************************************************
 void proj_main(void)
 {
+//game start initilize and enter game loop
     bool game_over = false;
     init_hardware();
    
-
+//while game is not over check for button and if pressed shoot the bullet
       while(!game_over)
       {
 					if(button){
@@ -463,11 +424,12 @@ void proj_main(void)
 						button = false;
 						Shootbullet(DIR_BTN);
 					}
-						
+	//asteroid updater					
           if(ALERT_ASTEROID)
           {
-						BulletUpdater();
-            ALERT_ASTEROID = false;
+		  //start by updating all bullet positions
+		BulletUpdater();
+            ALERT_ASTEROID = false; //reset asteroid handler and draw a rect and the asteroid
             lcd_draw_rectangle_centered(ASTEROID_X_COORD, AsteroidWidthPixels + 2, ASTEROID_Y_COORD, AsteroidHeightPixels + 2, LCD_COLOR_BLACK);
             lcd_draw_image(
                           ASTEROID_X_COORD,                       // X Center Point
@@ -478,7 +440,9 @@ void proj_main(void)
                           LCD_COLOR_WHITE,           // Foreground Color
                           LCD_COLOR_BLACK          // Background Color
                         );
+		  //check if the asteroid has been contacted properly by the sacrificial bullet(ship)
             ast_shoot(); 
+		  //check if the asteroid has hit the player to end the game
             game_over = check_game_over(
                                         ASTEROID_X_COORD,
                                         ASTEROID_Y_COORD,
@@ -490,10 +454,10 @@ void proj_main(void)
                                         PlayerWidthPixels
                                     );
           }
-          
+          //player handler
           if(ALERT_PLAYER)
           {
-            ALERT_PLAYER = false;
+            ALERT_PLAYER = false;//same as asteroid to update player position
             lcd_draw_rectangle_centered(PLAYER_X_COORD, PlayerWidthPixels + 2, PLAYER_Y_COORD, PlayerHeightPixels + 2, LCD_COLOR_BLACK);
             lcd_draw_image(
                           PLAYER_X_COORD,          // X Center Point
@@ -504,7 +468,7 @@ void proj_main(void)
                           pColor,            			 // Foreground Color
                           LCD_COLOR_BLACK          // Background Color
                         );
-              
+              //check to make sure player's move hasn't killed them
              game_over = check_game_over(
                                             ASTEROID_X_COORD,
                                             ASTEROID_Y_COORD,
