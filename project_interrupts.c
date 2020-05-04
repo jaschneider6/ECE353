@@ -29,6 +29,8 @@ static volatile uint16_t PS2_Y_DATA = 0;
 static volatile PS2_DIR_t PS2_DIR = PS2_DIR_CENTER;
 static volatile uint16_t count = 0;
 static volatile PS2_DIR_t direction = PS2_DIR_CENTER;
+static volatile DIR_BTN_t DIR_BTN;
+
 
 //*****************************************************************************
 // Returns the most current direction that was pressed.
@@ -65,15 +67,7 @@ void TIMER1A_Handler(void)
 	
     // Clear the interrupt
 	TIMER1->ICR |= TIMER_ICR_TATOCINT;
-	SYSCTL->RCGCGPIO |= SYSCTL_RCGCGPIO_R5;
-	uint16_t bit_mask;
-	bit_mask = 0x0000000E;
-	while( !(SYSCTL->PRGPIO & SYSCTL_PRGPIO_R5) ) {}
-	GPIO_PORTF_LOCK_R = 0x4C4F434B ;
-	GPIO_PORTF_CR_R = 0xFF;
-		
-	GPIOF->DEN |= bit_mask; //digital enable
-	GPIOF->DIR |= bit_mask; //output
+	
 }
 //*****************************************************************************
 // TIMER2 ISR is used to determine when to move the Invader
@@ -143,17 +137,21 @@ void ADC0SS2_Handler(void)
 
 void GPIOF_Handler(void){
 	uint8_t buttonVal = 0;
-	io_expander_read_reg(MCP23017_GPIOB_R);
+	GPIOA_Type *port;
+	port = (GPIOA_Type *)IO_EXPANDER_IRQ_GPIO_BASE;
+	buttonVal = io_expander_read_reg(MCP23017_GPIOB_R);
 	
 	switch(buttonVal){
-		case (0x7):
-			break;
-		case (0xB):
-			break;
 		case (0xD):
+			button = true;
+			DIR_BTN = DIR_BTN_DOWN;
+		printf("DOWN\n");
 			break;
-		case (0xE):
-			break;
-	
-}
 	}
+		buttonVal = 0;
+		
+		port->IM &= ~PF0;
+		port->ICR |= GPIO_ICR_GPIO_M;
+		port->IM |= PF0;
+}
+	

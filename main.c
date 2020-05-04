@@ -48,10 +48,13 @@ void EnableInterrupts(void)
 void initializeBoard(void)
 {
   DisableInterrupts();
-  gp_timer_config_32(TIMER0_BASE, TIMER_TAMR_TAMR_1_SHOT, false, false);
+  gp_timer_config_32(TIMER0_BASE, TIMER_TAMR_TAMR_1_SHOT, 50000, false, false);
   init_serial_debug(true, true);
   ft6x06_init();
 	eeprom_init();
+	ps2_initialize();
+	io_expander_init();
+	lcd_config_screen();
   EnableInterrupts();
 }
 //*****************************************************************************
@@ -65,11 +68,15 @@ main(void)
   i2c_status_t x_status;
 	
 	initializeBoard();
+	lcd_clear_screen(LCD_COLOR_BLACK);
+	lcd_draw_image(50, PlayerWidthPixels, 280, PlayerHeightPixels, PlayerBitmaps, LCD_COLOR_GREEN, LCD_COLOR_BLACK);
+	lcd_draw_image(190, PlayerWidthPixels, 280, PlayerHeightPixels, PlayerBitmaps, LCD_COLOR_BLUE, LCD_COLOR_BLACK);
 	
 	while(touch_event == 0){
 	touch_event = ft6x06_read_td_status();
 	};
-	x_status = ft6x06_read_x();
+	x = ft6x06_read_x();
+	printf("x-coordinate:%d\n", ft6x06_read_x());
 	if(x>119){
 		pColor = LCD_COLOR_BLUE;
 	}
