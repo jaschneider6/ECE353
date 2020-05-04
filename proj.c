@@ -165,6 +165,7 @@ void init_hardware(void)
   gp_timer_config_32(TIMER3_BASE,TIMER_TAMR_TAMR_PERIOD, 500000, false, true);
   gp_timer_config_32(TIMER4_BASE,TIMER_TAMR_TAMR_PERIOD, 50000, false, true);
 }
+//X, Y, ready, and Direction values for the 3 bullets allowed on screen
 
 //volatile uint16_t B1_X = 0;
 //volatile uint16_t B1_Y = 0;
@@ -178,10 +179,14 @@ void init_hardware(void)
 //volatile uint16_t B3_Y = 0;
 //volatile PS2_DIR_t B3_Dir = PS2_DIR_CENTER;
 //volatile bool B3_rdy = true;
-//volatile uint16_t nextB = 1;
-//volatile uint16_t kills = 0;
 //
+//volatile uint16_t kills = 0; //Kill counter
+
+//This method checks if any of the three bullets have destroyed the asteroid. If they have, it will delete the asteroid, create a new
+//asteroid, and increment the counter. If no contact is found then it will check for the next bullet, until all 3 have been checked
+
 //void ast_shoot(){
+	// checks bullet 1's contact with asteroid, if hits, it deletes, creates, and increments
 //	if ((B1_X >= (ASTEROID_X_COORD - AsteroidWidthPixels/2)) && (B1_X <= (ASTEROID_X_COORD + AsteroidWidthPixels/2))){
 //		if((B1_Y >= (ASTEROID_Y_COORD - AsteroidHeightPixels/2)) && (B1_Y <= (ASTEROID_Y_COORD + AsteroidHeightPixels/2))){
 //			lcd_draw_image(ASTEROID_X_COORD, AsteroidWidthPixels, ASTEROID_Y_COORD, AsteroidHeightPixels, AsteroidBitmaps, LCD_COLOR_BLACK, LCD_COLOR_BLACK);
@@ -193,6 +198,7 @@ void init_hardware(void)
 //	}
 //	
 //	
+	// checks bullet 2's contact with asteroid, if hits, it deletes, creates, and increments
 //	if ((B2_X >= (ASTEROID_X_COORD - AsteroidWidthPixels/2)) && (B2_X <= (ASTEROID_X_COORD + AsteroidWidthPixels/2))){
 //		if((B2_Y >= (ASTEROID_Y_COORD - AsteroidHeightPixels/2)) && (B2_Y <= (ASTEROID_Y_COORD + AsteroidHeightPixels/2))){
 //			lcd_draw_image(ASTEROID_X_COORD, AsteroidWidthPixels, ASTEROID_Y_COORD, AsteroidHeightPixels, AsteroidBitmaps, LCD_COLOR_BLACK, LCD_COLOR_BLACK);
@@ -204,6 +210,7 @@ void init_hardware(void)
 //	}
 //		
 //	
+	// checks bullet 3's contact with asteroid, if hits, it deletes, creates, and increments
 //	if ((B3_X >= (ASTEROID_X_COORD - AsteroidWidthPixels/2)) && (B3_X <= (ASTEROID_X_COORD + AsteroidWidthPixels/2))){
 //		if((B3_Y >= (ASTEROID_Y_COORD - AsteroidHeightPixels/2)) && (B3_Y <= (ASTEROID_Y_COORD + AsteroidHeightPixels/2))){
 //			lcd_draw_image(ASTEROID_X_COORD, AsteroidWidthPixels, ASTEROID_Y_COORD, AsteroidHeightPixels, AsteroidBitmaps, LCD_COLOR_BLACK, LCD_COLOR_BLACK);
@@ -221,11 +228,23 @@ void init_hardware(void)
 ////bullet updater
 ////***********
 //
-//
+
+//This function iterates through all 3 bullets and updates their images by overwriting the old location, then if they can move further,
+//updating their coordinate and redrawing them, If it hits a wall, then it erases the bullet and sets their ready flag to true allowing
+//the player to shoot
+
 //void BulletUpdater(){
+	//All bullets are handled the same, It is a switch statment on their direction, it then checks the relevant boundary, and if
+	//no contact will occur, then it updates position and redraws. If it will contact edge the bullet is removed and then the ready
+	//flag is switched to high so it can be reshot
 //	switch(B1_Dir){
+		//All cases are handled the same, the if is seeing if the bullet will not be off of the relevant edge for the direction
+		//If this is satisfied, then it clears the last image, increments or decrements value and redraws the bullet in it's new location
+		//If it is not satisfied then it clears the last image, and sets the ready flag to true because the bullet can now be 
+		//shot again
 //		case PS2_DIR_DOWN:
 //		if(B1_Y < 320){
+//			lcd_draw_image(B1_X, 1, B1_Y, 1, BulletBitmaps, LCD_COLOR_BLACK, LCD_COLOR_BLACK);
 //			B1_Y++;
 //			lcd_draw_image(B1_X, 1, B1_Y, 1, BulletBitmaps, pColor, LCD_COLOR_BLACK);
 //		} else{
@@ -236,6 +255,7 @@ void init_hardware(void)
 //		
 //		case PS2_DIR_UP:
 //		if(B1_Y > 0){
+//			lcd_draw_image(B1_X, 1, B1_Y, 1, BulletBitmaps, LCD_COLOR_BLACK, LCD_COLOR_BLACK);
 //			B1_Y--;
 //			lcd_draw_image(B1_X, 1, B1_Y, 1, BulletBitmaps, pColor, LCD_COLOR_BLACK);
 //		} else{
@@ -246,6 +266,7 @@ void init_hardware(void)
 //		
 //		case PS2_DIR_LEFT:
 //		if(B1_X > 0){
+//			lcd_draw_image(B1_X, 1, B1_Y, 1, BulletBitmaps, LCD_COLOR_BLACK, LCD_COLOR_BLACK);
 //			B1_X--;
 //			lcd_draw_image(B1_X, 1, B1_Y, 1, BulletBitmaps, pColor, LCD_COLOR_BLACK);
 //		} else{
@@ -256,6 +277,7 @@ void init_hardware(void)
 //		
 //		case PS2_DIR_RIGHT:
 //		if(B1_X < 240){
+//			lcd_draw_image(B1_X, 1, B1_Y, 1, BulletBitmaps, LCD_COLOR_BLACK, LCD_COLOR_BLACK);
 //			B1_X++;
 //			lcd_draw_image(B1_X, 1, B1_Y, 1, BulletBitmaps, pColor, LCD_COLOR_BLACK);
 //		} else{
@@ -269,9 +291,11 @@ void init_hardware(void)
 //	}
 //	
 //	
+		//Bullet 2 handling start
 //		switch(B2_Dir){
 //		case PS2_DIR_DOWN:
 //		if(B2_Y < 320){
+//			lcd_draw_image(B2_X, 1, B2_Y, 1, BulletBitmaps, LCD_COLOR_BLACK, LCD_COLOR_BLACK);
 //			B2_Y++;
 //			lcd_draw_image(B2_X, 1, B2_Y, 1, BulletBitmaps, pColor, LCD_COLOR_BLACK);
 //		} else{
@@ -282,6 +306,7 @@ void init_hardware(void)
 //		
 //		case PS2_DIR_UP:
 //		if(B2_Y > 0){
+//			lcd_draw_image(B2_X, 1, B2_Y, 1, BulletBitmaps, LCD_COLOR_BLACK, LCD_COLOR_BLACK);
 //			B2_Y--;
 //			lcd_draw_image(B2_X, 1, B2_Y, 1, BulletBitmaps, pColor, LCD_COLOR_BLACK);
 //		} else{
@@ -292,6 +317,7 @@ void init_hardware(void)
 //		
 //		case PS2_DIR_LEFT:
 //		if(B2_X > 0){
+//			lcd_draw_image(B2_X, 1, B2_Y, 1, BulletBitmaps, LCD_COLOR_BLACK, LCD_COLOR_BLACK);
 //			B2_X--;
 //			lcd_draw_image(B2_X, 1, B2_Y, 1, BulletBitmaps, pColor, LCD_COLOR_BLACK);
 //		} else{
@@ -302,6 +328,7 @@ void init_hardware(void)
 //		
 //		case PS2_DIR_RIGHT:
 //		if(B2_X < 240){
+//			lcd_draw_image(B2_X, 1, B2_Y, 1, BulletBitmaps, LCD_COLOR_BLACK, LCD_COLOR_BLACK);
 //			B2_X++;
 //			lcd_draw_image(B2_X, 1, B2_Y, 1, BulletBitmaps, pColor, LCD_COLOR_BLACK);
 //		} else{
@@ -314,9 +341,11 @@ void init_hardware(void)
 //			break;
 //	}
 //	
+		//Bullet 3 handling start
 //		switch(B3_Dir){
 //		case PS2_DIR_DOWN:
 //		if(B3_Y < 320){
+//			lcd_draw_image(B3_X, 1, B3_Y, 1, BulletBitmaps, LCD_COLOR_BLACK, LCD_COLOR_BLACK);
 //			B3_Y++;
 //			lcd_draw_image(B3_X, 1, B3_Y, 1, BulletBitmaps, pColor, LCD_COLOR_BLACK);
 //		} else{
@@ -327,6 +356,7 @@ void init_hardware(void)
 //		
 //		case PS2_DIR_UP:
 //		if(B3_Y > 0){
+//			lcd_draw_image(B3_X, 1, B3_Y, 1, BulletBitmaps, LCD_COLOR_BLACK, LCD_COLOR_BLACK);
 //			B3_Y--;
 //			lcd_draw_image(B3_X, 1, B3_Y, 1, BulletBitmaps, pColor, LCD_COLOR_BLACK);
 //		} else{
@@ -337,6 +367,7 @@ void init_hardware(void)
 //		
 //		case PS2_DIR_LEFT:
 //		if(B3_X > 0){
+//			lcd_draw_image(B3_X, 1, B3_Y, 1, BulletBitmaps, LCD_COLOR_BLACK, LCD_COLOR_BLACK);
 //			B3_X--;
 //			lcd_draw_image(B3_X, 1, B3_Y, 1, BulletBitmaps, pColor, LCD_COLOR_BLACK);
 //		} else{
@@ -347,6 +378,7 @@ void init_hardware(void)
 //		
 //		case PS2_DIR_RIGHT:
 //		if(B3_X < 240){
+//			lcd_draw_image(B3_X, 1, B3_Y, 1, BulletBitmaps, LCD_COLOR_BLACK, LCD_COLOR_BLACK);
 //			B3_X++;
 //			lcd_draw_image(B3_X, 1, B3_Y, 1, BulletBitmaps, pColor, LCD_COLOR_BLACK);
 //		} else{
@@ -366,10 +398,19 @@ void init_hardware(void)
 ////****
 ////Shootbullet
 ////****
+
+//This function is how a bullet is shot. It finds the first bullet that is available to shoot and sends it in the correct direction
+//if no bullet is available then the function does not shoot a bullet
+
 //void Shootbullet(PS2_DIR_t dir) {
 //	
+	//All bullets are handled identically
+	//B1 handling only enters if the bullet is ready to be fired
 //	if(B1_rdy){
+		//All directions are handled identically, Switches the direction that was pressed so that the bullet travels correctly
 //		switch (dir){
+			//Ex. Up means that the x is just the player, and y is player -half player height, which spawns at the top
+			//it then sets the direction accordingly, and ready to false, as the bullet has now been shot
 //			case up:
 //				B1_X = PLAYER_X_COORD;
 //				B1_Y = PLAYER_Y_COORD - PlayerHeightPixels/2;
@@ -399,6 +440,7 @@ void init_hardware(void)
 //		}
 //	}
 //	
+	//B2 ready case
 //	else if(B2_rdy){
 //		switch (dir){
 //			case up:
@@ -430,6 +472,7 @@ void init_hardware(void)
 //		}
 //	}
 //	
+	//B3 ready case
 //	else if(B3_rdy){
 //		switch (dir){
 //			case up:
