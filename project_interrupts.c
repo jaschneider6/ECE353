@@ -64,6 +64,7 @@ PS2_DIR_t ps2_get_direction(void)
 //*****************************************************************************
 void TIMER1A_Handler(void)
 {	
+	GPIOF->DATA ^= RED_M;
 	
     // Clear the interrupt
 	TIMER1->ICR |= TIMER_ICR_TATOCINT;
