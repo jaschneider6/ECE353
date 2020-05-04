@@ -62,21 +62,23 @@ void initializeBoard(void)
 int 
 main(void)
 {
+	//Board touch event parameters, used for position and status to check where it is touched
 	uint16_t x,y;
-  uint8_t touch_event = 0;
-  i2c_status_t td_status;
-  i2c_status_t x_status;
-	
+  	uint8_t touch_event = 0;
+  	i2c_status_t td_status;
+  	i2c_status_t x_status;
+	//initialize board and clear the screen, then draw a green char on the left and a blue one on the right
 	initializeBoard();
 	lcd_clear_screen(LCD_COLOR_BLACK);
 	lcd_draw_image(50, PlayerWidthPixels, 280, PlayerHeightPixels, PlayerBitmaps, LCD_COLOR_GREEN, LCD_COLOR_BLACK);
 	lcd_draw_image(190, PlayerWidthPixels, 280, PlayerHeightPixels, PlayerBitmaps, LCD_COLOR_BLUE, LCD_COLOR_BLACK);
-	
+	//read where player touches board until we get a value
 	while(touch_event == 0){
 	touch_event = ft6x06_read_td_status();
 	};
+	//set x value to touch value and if they clicked on the right side then they selected the blue character otherwise they selected
+	//the green character
 	x = ft6x06_read_x();
-	printf("x-coordinate:%d\n", ft6x06_read_x());
 	if(x>119){
 		pColor = LCD_COLOR_BLUE;
 	}
